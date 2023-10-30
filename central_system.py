@@ -14,6 +14,8 @@ class ChargePoint(cp):
         response_timeout = 3
         super().__init__(id, connection, response_timeout)
 
+        self.transaction_id = 1
+
     @on(Action.BootNotification)
     def on_boot_notification(
         self, charge_point_vendor: str, charge_point_model: str, **kwargs
@@ -44,7 +46,7 @@ class ChargePoint(cp):
             id_tag_info={
                 "status": "Accepted"
             },
-            transaction_id=int(1)
+            transaction_id=self.transaction_id
         )
 
     @on(Action.StopTransaction)
@@ -57,6 +59,8 @@ class ChargePoint(cp):
     
     @on(Action.MeterValues)
     def on_meter_value(self, connector_id, meter_value, transaction_id):
+        print(f'MeterValues for connector {connector_id} and transaction {transaction_id}: {meter_value}')
+        self.transaction_id = transaction_id
         return call_result.MeterValuesPayload()
 
     @on(Action.StatusNotification)
@@ -75,7 +79,7 @@ class ChargePoint(cp):
 
     async def remote_stop_transaction(self):
         request = call.RemoteStopTransactionPayload(
-            transaction_id=1
+            transaction_id=self.transaction_id
         )
         response = await self.call(request)
         if response.status == RemoteStartStopStatus.accepted:
