@@ -30,6 +30,14 @@ class ChargePoint(cp):
             current_time=datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S") + "Z"
         )
     
+    @on(Action.Authorize)
+    def on_authorize(self, id_tag):
+        return call_result.AuthorizePayload(
+            id_tag_info={
+                "status": 'Accepted'
+            }
+        )
+
     @on(Action.StartTransaction)
     def on_start_transaction(self, connector_id, id_tag, timestamp, meter_start, reservation_id):
         return call_result.StartTransactionPayload(
@@ -40,21 +48,26 @@ class ChargePoint(cp):
         )
 
     @on(Action.StopTransaction)
-    def on_stop_transaction(self, transaction_id, id_tag, timestamp, meter_stop):
-        return call_result.StopTransactionPayload()
+    def on_stop_transaction(self, transaction_id, id_tag, timestamp, meter_stop, reason):
+        return call_result.StopTransactionPayload(
+            id_tag_info={
+                "status": 'Accepted'
+            }
+        )
     
     @on(Action.MeterValues)
-    def on_meter_value(self):
+    def on_meter_value(self, connector_id, meter_value, transaction_id):
         return call_result.MeterValuesPayload()
 
     @on(Action.StatusNotification)
-    def on_status_notification(self, connector_id, error_code, info, status, timestamp, vendor_id, vendor_error_code):
+    def on_status_notification(self, connector_id, error_code, info, status, timestamp):
         print(f'StatusNotification: {status}')
         return call_result.StatusNotificationPayload()
 
     async def remote_start_transaction(self):
         request = call.RemoteStartTransactionPayload(
-            id_tag="1"
+            id_tag="1",
+            connector_id=1
         )
         response = await self.call(request)
         if response.status == RemoteStartStopStatus.accepted:
