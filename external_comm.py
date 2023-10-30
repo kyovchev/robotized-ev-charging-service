@@ -8,6 +8,7 @@ async def external_comm(websocket):
         if websocket:
             try:
                 command = await websocket.recv()
+                print(command)
             except:
                 print("Error: Cannot receive from the socket!")
                 break
@@ -23,7 +24,7 @@ async def external_comm(websocket):
                     response = "Charging is started."
                 except:
                     print("Error: Cannot send start command!")
-                    response = "Error: Cannot sent start command!"
+                    response = "Error: Cannot send start command!"
             elif command == "stop":
                 print("Stop charging.")
                 try:
@@ -33,7 +34,16 @@ async def external_comm(websocket):
                     response = "Charging is stopped."
                 except:
                     print("Error: Cannot send stop command!")
-                    response = "Error: Cannot sent stop command!"
+                    response = "Error: Cannot send stop command!"
+            elif command == "status":
+                print("Request status.")
+                try:
+                    response = f'Status: {config.status}, transaction_id: {config.transaction_id}, meter_value: {config.meter_value}'
+                except TimeoutError:
+                    response = "Cannot retrieve status!"
+                except:
+                    print("Error: Cannot retrieve status.")
+                    response = "Error: Cannot retrieve status!"
             elif command == "exit":
                 print("Closing the socket.")
                 break
