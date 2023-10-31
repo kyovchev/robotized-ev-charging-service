@@ -39,7 +39,7 @@ class ChargePoint(cp):
         )
 
     @on(Action.StartTransaction)
-    def on_start_transaction(self, connector_id, id_tag, timestamp, meter_start, reservation_id):
+    def on_start_transaction(self, connector_id, id_tag, timestamp, meter_start):
         return call_result.StartTransactionPayload(
             id_tag_info={
                 "status": "Accepted"
@@ -63,7 +63,7 @@ class ChargePoint(cp):
         return call_result.MeterValuesPayload()
 
     @on(Action.StatusNotification)
-    def on_status_notification(self, connector_id, error_code, info, status, timestamp):
+    def on_status_notification(self, connector_id, error_code, status, timestamp):
         print(f'StatusNotification: {status}')
         config.status = status
         return call_result.StatusNotificationPayload()
